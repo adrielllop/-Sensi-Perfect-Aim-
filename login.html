@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - MestreXit.ia</title>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+    <style>
+        :root {
+            --bg: #0a0a0f;
+            --card: #12121a;
+            --card2: #1a1a26;
+            --border: #252535;
+            --text: #e0e0e0;
+            --text2: #a0a0b8;
+            --accent: #ff4d2e;
+            --gold: #f0b90b;
+            --gradient: linear-gradient(135deg, #ff4d2e, #ff6b3d);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: var(--bg);
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            color: var(--text);
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            background-image: radial-gradient(ellipse at 50% 50%, rgba(255, 77, 46, 0.05) 0%, transparent 70%);
+        }
+
+        .login-card {
+            width: 100%;
+            max-width: 400px;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 40px 30px;
+            text-align: center;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+        }
+
+        .logo-img {
+            width: 80px;
+            height: 80px;
+            border-radius: 20px;
+            margin-bottom: 20px;
+            border: 2px solid var(--accent);
+            box-shadow: 0 0 20px rgba(255, 77, 46, 0.3);
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        p { color: var(--text2); font-size: 0.9rem; margin-bottom: 30px; }
+
+        .input-group { margin-bottom: 20px; text-align: left; }
+        label { display: block; font-size: 0.8rem; color: var(--text2); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px; }
+        input {
+            width: 100%;
+            padding: 15px;
+            background: var(--card2);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            color: #fff;
+            font-size: 1.1rem;
+            text-align: center;
+            letter-spacing: 4px;
+            outline: none;
+            transition: 0.3s;
+        }
+        input:focus { border-color: var(--accent); box-shadow: 0 0 0 4px rgba(255, 77, 46, 0.1); }
+
+        .btn-login {
+            width: 100%;
+            padding: 16px;
+            background: var(--gradient);
+            border: none;
+            border-radius: 14px;
+            color: #fff;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+            text-transform: uppercase;
+            margin-top: 10px;
+        }
+        .btn-login:hover { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(255, 77, 46, 0.4); }
+        .btn-login:disabled { opacity: 0.6; cursor: not-allowed; }
+
+        .msg { margin-top: 20px; font-size: 0.85rem; min-height: 20px; }
+        .msg.error { color: #ff3e3e; }
+        .msg.success { color: var(--green); }
+
+        .footer-links { margin-top: 30px; display: flex; justify-content: center; gap: 20px; }
+        .footer-links a { color: var(--gold); text-decoration: none; font-size: 0.8rem; font-weight: 600; }
+    </style>
+</head>
+<body>
+
+    <div class="login-card">
+        <img src="https://i.postimg.cc/0NCCZ4vc/file-00000000779471f585f8cb023dfdc1f3.png" alt="Logo" class="logo-img">
+        <h1>MestreXit.ia</h1>
+        <p>Insira sua chave de acesso para continuar</p>
+
+        <div class="input-group">
+            <label>Sua Key de Acesso</label>
+            <input type="text" id="key-input" placeholder="00000000" maxlength="8">
+        </div>
+
+        <button class="btn-login" id="btn-entrar" onclick="autenticar()">Acessar Gerador</button>
+
+        <div id="status-msg" class="msg"></div>
+
+        <div class="footer-links">
+            <a href="https://discord.gg/REByp2b7r" target="_blank">Adquirir Key</a>
+            <a href="https://discord.gg/REByp2b7r" target="_blank">Suporte</a>
+        </div>
+    </div>
+
+    <script>
+        // CONFIGURAÇÃO FIREBASE (O usuário deve preencher)
+        const firebaseConfig = {
+            apiKey: "AIzaSyBbAi70USOFBT9ytiRJ9AcGC6HIkvad3n8",
+            authDomain: "gerador-de-sensi-d3431.firebaseapp.com",
+            databaseURL: "https://gerador-de-sensi-d3431-default-rtdb.firebaseio.com",
+            projectId: "gerador-de-sensi-d3431",
+            storageBucket: "gerador-de-sensi-d3431.firebasestorage.app",
+            messagingSenderId: "164254979656",
+            appId: "1:164254979656:web:32b0815c31224a9cc2aa7d",
+            measurementId: "G-9D6Q472DCH"
+        };
+
+        // Inicializar Firebase
+        if (firebaseConfig.apiKey !== "SUA_API_KEY") {
+            firebase.initializeApp(firebaseConfig);
+        }
+
+        const db = firebase.database();
+
+        // Função para gerar um HWID simples baseado no navegador/tela
+        function getHWID() {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            const txt = 'MestreXitHWID';
+            ctx.textBaseline = "top";
+            ctx.font = "14px 'Arial'";
+            ctx.textBaseline = "alphabetic";
+            ctx.fillStyle = "#f60";
+            ctx.fillRect(125,1,62,20);
+            ctx.fillStyle = "#069";
+            ctx.fillText(txt, 2, 15);
+            ctx.fillStyle = "rgba(102, 204, 0, 0.7)";
+            ctx.fillText(txt, 4, 17);
+            const b64 = canvas.toDataURL().replace("data:image/png;base64,","");
+            let bin = atob(b64);
+            let crc = 0;
+            for (let i = 0; i < bin.length; i++) {
+                crc = (crc << 5) - crc + bin.charCodeAt(i);
+                crc |= 0;
+            }
+            return Math.abs(crc).toString(16) + "-" + screen.width + "x" + screen.height;
+        }
+
+        async function autenticar() {
+            const key = document.getElementById('key-input').value;
+            const btn = document.getElementById('btn-entrar');
+            const msg = document.getElementById('status-msg');
+
+            if (key.length < 4) {
+                msg.innerText = "⚠️ Digite uma key válida!";
+                msg.className = "msg error";
+                return;
+            }
+
+            btn.disabled = true;
+            msg.innerText = "⏳ Validando...";
+            msg.className = "msg";
+
+            const hwid = getHWID();
+
+            try {
+                const snapshot = await db.ref('keys/' + key).get();
+                if (!snapshot.exists()) {
+                    throw new Error("❌ Key inválida!");
+                }
+
+                const data = snapshot.val();
+
+                if (data.status !== 'active') {
+                    throw new Error("❌ Esta key está " + (data.status === 'paused' ? 'pausada' : 'expirada') + "!");
+                }
+
+                // Verificar HWID (Bloqueio por 1 celular)
+                if (data.hwid && data.hwid !== hwid) {
+                    throw new Error("❌ Esta key já está em uso em outro dispositivo!");
+                }
+
+                // Iniciar cronômetro se for o primeiro uso
+                let updates = {};
+                if (data.usedAt === 0) {
+                    updates.usedAt = Date.now();
+                }
+                
+                // Vincular HWID se estiver livre
+                if (!data.hwid) {
+                    updates.hwid = hwid;
+                }
+
+                if (Object.keys(updates).length > 0) {
+                    await db.ref('keys/' + key).update(updates);
+                }
+
+                // Verificar se expirou agora
+                const startTime = data.usedAt || updates.usedAt;
+                const expireDate = startTime + (data.durationDays * 24 * 60 * 60 * 1000);
+                if (Date.now() > expireDate) {
+                    await db.ref('keys/' + key).update({ status: 'expired' });
+                    throw new Error("❌ Esta key acabou de expirar!");
+                }
+
+                msg.innerText = "✅ Acesso concedido! Redirecionando...";
+                msg.className = "msg success";
+
+                // Salvar na sessão e redirecionar
+                localStorage.setItem('mestrexit_auth', JSON.stringify({
+                    key: key,
+                    type: data.type,
+                    hwid: hwid,
+                    expires: expireDate
+                }));
+
+                setTimeout(() => {
+                    window.location.href = 'geradordesensi.html';
+                }, 1500);
+
+            } catch (error) {
+                msg.innerText = error.message;
+                msg.className = "msg error";
+                btn.disabled = false;
+            }
+        }
+    </script>
+</body>
+</html>
