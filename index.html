@@ -1,0 +1,781 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Free Fire · PRO PANEL | Aimbot + Sensi Gen v4 (Famosos)</title>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+    <script>
+        (function() {
+            const auth = localStorage.getItem('mestrexit_auth');
+            if (!auth) {
+                window.location.href = 'login.html';
+                return;
+            }
+            const data = JSON.parse(auth);
+            if (Date.now() > data.expires) {
+                localStorage.removeItem('mestrexit_auth');
+                window.location.href = 'login.html';
+                return;
+            }
+        })();
+    </script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+        }
+
+        body {
+            background: radial-gradient(circle at 20% 30%, #0a0f1e, #03060c);
+            font-family: 'Poppins', 'Segoe UI', system-ui, -apple-system, monospace;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 24px;
+        }
+
+        .panel {
+            max-width: 760px;
+            width: 100%;
+            background: rgba(12, 18, 28, 0.85);
+            backdrop-filter: blur(12px);
+            border-radius: 2rem;
+            border: 1px solid rgba(0, 255, 255, 0.25);
+            box-shadow: 0 25px 45px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(0, 255, 255, 0.1) inset;
+            overflow: hidden;
+        }
+
+        .tab-header {
+            display: flex;
+            background: rgba(0, 0, 0, 0.5);
+            border-bottom: 1px solid rgba(0, 255, 255, 0.3);
+        }
+
+        .tab-btn {
+            flex: 1;
+            background: transparent;
+            border: none;
+            padding: 1rem 0;
+            font-size: 1.2rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            color: #8e9aaf;
+            cursor: pointer;
+            transition: 0.2s;
+            text-transform: uppercase;
+        }
+
+        .tab-btn.active {
+            color: #0ff;
+            text-shadow: 0 0 6px #0ff;
+            background: linear-gradient(90deg, transparent, rgba(0, 255, 255, 0.15), transparent);
+            border-bottom: 2px solid #0ff;
+        }
+
+        .tab-content {
+            padding: 1.8rem 1.5rem 2rem;
+        }
+
+        .tab-pane {
+            display: none;
+            animation: fade 0.25s ease;
+        }
+
+        .tab-pane.active-pane {
+            display: block;
+        }
+
+        @keyframes fade {
+            from { opacity: 0; transform: translateY(6px);}
+            to { opacity: 1; transform: translateY(0);}
+        }
+
+        .section-card {
+            background: rgba(0, 0, 0, 0.45);
+            border-radius: 1.5rem;
+            padding: 1.2rem;
+            margin-bottom: 1.8rem;
+            border: 1px solid rgba(0, 255, 255, 0.2);
+            backdrop-filter: blur(4px);
+        }
+
+        .section-title {
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: #7f8fa4;
+            margin-bottom: 1rem;
+            border-left: 3px solid #0ff;
+            padding-left: 12px;
+            font-weight: 600;
+        }
+
+        .toggle-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-top: 0.5rem;
+        }
+
+        .toggle-item {
+            flex: 1;
+            min-width: 120px;
+            background: #0e121f;
+            border-radius: 2rem;
+            padding: 0.7rem 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            border: 1px solid #2a3346;
+            transition: all 0.2s;
+        }
+
+        .toggle-label {
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: #ccd6f0;
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 48px;
+            height: 24px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #2c3448;
+            transition: 0.2s;
+            border-radius: 34px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: 0.2s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: #0ff;
+            box-shadow: 0 0 6px #0ff;
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(24px);
+        }
+
+        .fov-controls {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 1.5rem;
+            margin-top: 1rem;
+        }
+
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: #0a0e18;
+            padding: 8px 16px;
+            border-radius: 40px;
+        }
+
+        .control-group span {
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: #a3b3d6;
+        }
+
+        input[type="range"] {
+            width: 160px;
+            height: 4px;
+            background: #1f2a3e;
+            border-radius: 10px;
+            -webkit-appearance: none;
+        }
+
+        input[type="range"]:focus {
+            outline: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            background: #0ff;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 0 5px cyan;
+        }
+
+        .circle-size-value {
+            background: #00000066;
+            padding: 2px 8px;
+            border-radius: 20px;
+            font-family: monospace;
+            font-weight: bold;
+        }
+
+        .pro-engine {
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .pro-engine h2 {
+            font-size: 1.7rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #0ff, #2a6fdb);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            letter-spacing: 1px;
+        }
+
+        .os-selector {
+            display: flex;
+            gap: 1rem;
+            background: #0f1422;
+            border-radius: 3rem;
+            padding: 0.3rem;
+            margin: 1rem 0;
+        }
+
+        .os-btn {
+            flex: 1;
+            background: transparent;
+            border: none;
+            padding: 10px;
+            border-radius: 2rem;
+            font-weight: bold;
+            color: #b9c7e6;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .os-btn.active-os {
+            background: linear-gradient(95deg, #0ff, #0bc);
+            color: #010101;
+            box-shadow: 0 0 6px #0ff;
+        }
+
+        .input-field {
+            width: 100%;
+            background: #0a0f1c;
+            border: 1px solid #2c3a55;
+            border-radius: 2rem;
+            padding: 12px 18px;
+            margin: 0.8rem 0;
+            color: white;
+            font-size: 0.9rem;
+            outline: none;
+            transition: 0.2s;
+        }
+
+        .input-field:focus {
+            border-color: #0ff;
+            box-shadow: 0 0 6px #0ff44a;
+        }
+
+        .generate-btn, .famous-select {
+            width: 100%;
+            background: linear-gradient(95deg, #0bd, #0ff);
+            border: none;
+            padding: 12px;
+            border-radius: 3rem;
+            font-weight: bold;
+            font-size: 1rem;
+            margin-top: 0.5rem;
+            cursor: pointer;
+            color: #030b14;
+            letter-spacing: 1px;
+            transition: 0.2s;
+            box-shadow: 0 4px 12px rgba(0, 255, 255, 0.2);
+        }
+
+        .generate-btn:hover, .famous-select:hover {
+            transform: scale(0.98);
+            box-shadow: 0 0 12px cyan;
+        }
+
+        select.famous-select {
+            background: #0a0f1c;
+            color: #0ff;
+            border: 1px solid #0ff;
+            appearance: none;
+            text-align: center;
+            font-family: monospace;
+            cursor: pointer;
+        }
+
+        .sensi-result {
+            background: #03060ecc;
+            margin-top: 1.2rem;
+            padding: 1rem;
+            border-radius: 1.2rem;
+            border-left: 4px solid #0ff;
+            font-size: 0.85rem;
+        }
+
+        .sensi-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px 16px;
+            margin-top: 8px;
+        }
+
+        .sensi-item {
+            display: flex;
+            justify-content: space-between;
+            border-bottom: 1px dashed #2a3a60;
+            padding: 4px 0;
+        }
+
+        .sensi-label {
+            color: #9aaec9;
+        }
+
+        .sensi-value {
+            color: #0ff;
+            font-weight: bold;
+            font-family: monospace;
+        }
+
+        .note-text {
+            font-size: 0.7rem;
+            color: #6f85a5;
+            text-align: center;
+            margin-top: 1rem;
+        }
+
+        .toast-msg {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(95deg, #0bd, #0ff);
+            color: #010d1a;
+            padding: 10px 24px;
+            border-radius: 40px;
+            font-weight: bold;
+            font-size: 0.9rem;
+            z-index: 10000;
+            box-shadow: 0 0 15px cyan;
+            white-space: nowrap;
+            font-family: monospace;
+            letter-spacing: 1px;
+            pointer-events: none;
+            animation: fadeOut 2s forwards;
+        }
+
+        @keyframes fadeOut {
+            0% { opacity: 1; transform: translateX(-50%) scale(1);}
+            70% { opacity: 1; transform: translateX(-50%) scale(1);}
+            100% { opacity: 0; transform: translateX(-50%) scale(0.9); visibility: hidden; display: none;}
+        }
+
+        hr {
+            border-color: #2e3a55;
+            margin: 12px 0;
+        }
+    </style>
+</head>
+<body>
+
+<div class="panel">
+    <div class="tab-header">
+        <button class="tab-btn active" data-tab="func">⚡ FUNÇÕES</button>
+        <button class="tab-btn" data-tab="sens">🎯 SENSIBILIDADE</button>
+    </div>
+
+    <!-- ABA 1: FUNÇÕES -->
+    <div class="tab-content">
+        <div id="funcPane" class="tab-pane active-pane">
+            <div class="section-card">
+                <div class="section-title">🎲 AIMBOT CONFIG</div>
+                <div class="toggle-grid">
+                    <div class="toggle-item">
+                        <span class="toggle-label">🔫 Ativar Aimbot</span>
+                        <label class="switch">
+                            <input type="checkbox" id="aimbotMaster">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="toggle-item">
+                        <span class="toggle-label">⚡ Aimbot Rage</span>
+                        <label class="switch">
+                            <input type="checkbox" id="aimbotRage">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="toggle-item">
+                        <span class="toggle-label">🔥 Aimbot Fire</span>
+                        <label class="switch">
+                            <input type="checkbox" id="aimbotFire">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="toggle-item">
+                        <span class="toggle-label">📉 No Recoil</span>
+                        <label class="switch">
+                            <input type="checkbox" id="noRecoil">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AIMFOV: circle + size + color -->
+            <div class="section-card">
+                <div class="section-title">🎯 AIM FOV (CÍRCULO CENTRAL)</div>
+                <div class="toggle-item" style="margin-bottom: 1rem; background: #0a1020;">
+                    <span class="toggle-label">🧿 Mostrar círculo AimFOV</span>
+                    <label class="switch">
+                        <input type="checkbox" id="aimFovToggle">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div class="fov-controls">
+                    <div class="control-group">
+                        <span>📏 Tamanho (0-360px)</span>
+                        <input type="range" id="fovSizeSlider" min="0" max="360" value="120" step="1">
+                        <span id="sizeValueDisplay" class="circle-size-value">120px</span>
+                    </div>
+                    <div class="control-group">
+                        <span>🎨 Cor</span>
+                        <input type="color" id="fovColorPicker" value="#00ffff">
+                    </div>
+                </div>
+                <div class="note-text" style="margin-top: 8px; text-align: left;">* Círculo aparece apenas com AIMBOT ATIVADO + toggle do círculo.</div>
+            </div>
+            <div class="note-text" style="background: #00000030; border-radius: 20px; padding: 8px;">⚙️ Toggles simulam configurações. Aimbot ativado exibe notificação "aimbot injectado".</div>
+        </div>
+
+        <!-- ABA 2: SENSIBILIDADE (Gerador + Famosos) -->
+        <div id="sensPane" class="tab-pane">
+            <div class="pro-engine">
+                <h2>PRO ENGINE</h2>
+                <p>SENSI GENERATOR · FF EDITION</p>
+            </div>
+            <!-- Gerador personalizado -->
+            <div class="section-card" style="padding: 1.5rem;">
+                <div class="section-title">⚙️ GERADOR PERSONALIZADO</div>
+                <div class="os-selector" id="osSelector">
+                    <button class="os-btn active-os" data-os="android">📱 Android</button>
+                    <button class="os-btn" data-os="iphone">🍎 iPhone</button>
+                </div>
+                <div class="section-title" style="margin-top: 12px;">📱 DEVICE MODEL</div>
+                <input type="text" id="deviceModel" class="input-field" placeholder="E.G. REDMI NOTE 12 / iPhone 13" value="Redmi Note 12">
+                <div class="section-title" style="margin-top: 8px;">⏳ DEVICE AGE (IN YEARS)</div>
+                <input type="number" id="deviceAge" class="input-field" value="0" min="0" max="10" step="1">
+                <button id="generateSensiBtn" class="generate-btn">✨ GENERATE BEST SENSI ✨</button>
+                <div id="sensiOutput" class="sensi-result">
+                    🔄 Clique em gerar — as sensibilidades mudam a cada vez! (Geral até Olhadinha: 100-200)
+                </div>
+            </div>
+
+            <!-- SEÇÃO SENSI FAMOSOS -->
+            <div class="section-card" style="padding: 1.5rem;">
+                <div class="section-title">🌟 SENSI FAMOSOS (PRO PLAYERS)</div>
+                <select id="famousSelect" class="famous-select">
+                    <option value="">-- Selecione um jogador famoso --</option>
+                    <option value="nobru">🔥 Nobru (LOUD)</option>
+                    <option value="biel">🎯 Biel (ex-LOUD)</option>
+                    <option value="cerol">⚡ Cerol (Fluxo)</option>
+                    <option value="draco">🐉 Draco (Los Grandes)</option>
+                    <option value="mts">🎮 MTS (Gods)</option>
+                    <option value="euucria">💀 EuuzCria (PaiN)</option>
+                    <option value="death">👑 Death (Black Dragons)</option>
+                    <option value="diniz">🕹️ Diniz (INTZ)</option>
+                    <option value="blackn444">🖤 Blackn444 (Elite)</option>
+                </select>
+                <div id="famousSensiOutput" class="sensi-result" style="margin-top: 1rem;">
+                    👑 Selecione um famoso acima para ver suas sensibilidades.
+                </div>
+                <div class="note-text" style="margin-top: 10px;">* Sensibilidades reais inspiradas nos pro players (ajustadas aos ranges 100-200 / botão 0-100 / DPI 450-700).</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Overlay do círculo -->
+<div id="aimFovCircleOverlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 9999; overflow: visible;">
+    <div id="fovCircle" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); border-radius: 50%; border: 2.5px solid cyan; background: transparent; box-shadow: 0 0 8px rgba(0,255,255,0.4); transition: width 0.05s ease, height 0.05s ease, border-color 0.1s; pointer-events: none;"></div>
+</div>
+
+<script>
+    // ---------- ELEMENTOS COMUNS ----------
+    const aimbotMaster = document.getElementById('aimbotMaster');
+    const aimFovToggle = document.getElementById('aimFovToggle');
+    const fovSizeSlider = document.getElementById('fovSizeSlider');
+    const sizeDisplay = document.getElementById('sizeValueDisplay');
+    const fovColorPicker = document.getElementById('fovColorPicker');
+    const fovCircle = document.getElementById('fovCircle');
+    const aimbotRage = document.getElementById('aimbotRage');
+    const aimbotFire = document.getElementById('aimbotFire');
+    const noRecoil = document.getElementById('noRecoil');
+
+    function showToast(message, duration = 2000) {
+        const existingToast = document.querySelector('.toast-msg');
+        if(existingToast) existingToast.remove();
+        const toast = document.createElement('div');
+        toast.className = 'toast-msg';
+        toast.innerText = message;
+        document.body.appendChild(toast);
+        setTimeout(() => {
+            if(toast && toast.remove) toast.remove();
+        }, duration);
+    }
+
+    // CÍRCULO
+    function updateCircleVisibility() {
+        const aimbotActive = aimbotMaster.checked;
+        const fovToggleActive = aimFovToggle.checked;
+        const circleEnabled = aimbotActive && fovToggleActive;
+        if (circleEnabled) {
+            const sizePx = parseInt(fovSizeSlider.value, 10);
+            const color = fovColorPicker.value;
+            fovCircle.style.width = sizePx + 'px';
+            fovCircle.style.height = sizePx + 'px';
+            fovCircle.style.borderColor = color;
+            fovCircle.style.borderWidth = '2.5px';
+            fovCircle.style.boxShadow = `0 0 10px ${color}`;
+            fovCircle.style.display = 'block';
+        } else {
+            fovCircle.style.display = 'none';
+        }
+    }
+    function updateCircleSizeAndColor() {
+        if (aimbotMaster.checked && aimFovToggle.checked) {
+            const sizePx = parseInt(fovSizeSlider.value, 10);
+            const color = fovColorPicker.value;
+            fovCircle.style.width = sizePx + 'px';
+            fovCircle.style.height = sizePx + 'px';
+            fovCircle.style.borderColor = color;
+            fovCircle.style.boxShadow = `0 0 10px ${color}`;
+        }
+        sizeDisplay.innerText = fovSizeSlider.value + 'px';
+    }
+    aimFovToggle.addEventListener('change', updateCircleVisibility);
+    fovSizeSlider.addEventListener('input', () => { updateCircleSizeAndColor(); updateCircleVisibility(); });
+    fovColorPicker.addEventListener('input', () => { updateCircleSizeAndColor(); updateCircleVisibility(); });
+    aimbotMaster.addEventListener('change', (e) => {
+        if (aimbotMaster.checked) showToast('🔫 AIMBOT INJECTADO ✅', 1800);
+        updateCircleVisibility();
+    });
+    [aimbotRage, aimbotFire, noRecoil].forEach(toggle => {
+        toggle.addEventListener('change', (e) => {
+            const label = e.target.parentElement.parentElement.querySelector('.toggle-label')?.innerText || 'toggle';
+            console.log(`[PANEL] ${label} -> ${e.target.checked ? 'ON' : 'OFF'}`);
+        });
+    });
+    fovCircle.style.display = 'none';
+    updateCircleVisibility();
+
+    // TABS
+    const tabBtns = document.querySelectorAll('.tab-btn');
+    const panes = {
+        func: document.getElementById('funcPane'),
+        sens: document.getElementById('sensPane')
+    };
+    tabBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const tabId = btn.getAttribute('data-tab');
+            if (!tabId) return;
+            tabBtns.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            Object.values(panes).forEach(pane => pane.classList.remove('active-pane'));
+            if (tabId === 'func') panes.func.classList.add('active-pane');
+            else panes.sens.classList.add('active-pane');
+        });
+    });
+
+    // ---------- GERADOR PERSONALIZADO (com variação aleatória e ranges 100-200) ----------
+    const osBtns = document.querySelectorAll('.os-btn');
+    let selectedOS = 'android';
+    const deviceModelInput = document.getElementById('deviceModel');
+    const deviceAgeInput = document.getElementById('deviceAge');
+    const generateBtn = document.getElementById('generateSensiBtn');
+    const sensiOutputDiv = document.getElementById('sensiOutput');
+
+    osBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            osBtns.forEach(b => b.classList.remove('active-os'));
+            btn.classList.add('active-os');
+            selectedOS = btn.getAttribute('data-os');
+        });
+    });
+
+    function randomInt(min, max) {
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    function generateFullSensitivityWithRandom(os, model, age) {
+        let geralBase = 150, redDotBase = 145, scope2xBase = 138, scope4xBase = 130, awmBase = 122, olhadinhaBase = 155, botaoBase = 55, dpiBase = 570;
+        if (os === 'android') { geralBase += 5; redDotBase += 4; olhadinhaBase += 6; dpiBase += 15; }
+        else { geralBase -= 3; redDotBase -= 2; scope2xBase += 3; awmBase += 4; olhadinhaBase -= 4; dpiBase -= 12; }
+        const modelLow = model.toLowerCase();
+        if (modelLow.includes('redmi') || modelLow.includes('note') || modelLow.includes('poco')) { geralBase += 6; redDotBase += 5; botaoBase += 6; olhadinhaBase += 7; }
+        else if (modelLow.includes('rog') || modelLow.includes('legion') || modelLow.includes('black shark')) { geralBase += 9; redDotBase += 8; scope2xBase += 5; awmBase += 5; dpiBase += 25; botaoBase += 8; }
+        else if (modelLow.includes('iphone') && (modelLow.includes('14') || modelLow.includes('15') || modelLow.includes('16'))) { geralBase += 4; olhadinhaBase += 5; awmBase += 6; dpiBase += 10; }
+        else if (modelLow.includes('samsung') && (modelLow.includes('s23') || modelLow.includes('s24'))) { geralBase += 3; redDotBase += 2; dpiBase += 12; }
+        else if (modelLow.includes('iphone') && modelLow.includes('x')) { geralBase -= 5; olhadinhaBase -= 7; }
+        let ageReduce = Math.min(age, 5) * 1.8;
+        if (age > 0) {
+            geralBase = Math.max(110, geralBase - ageReduce);
+            redDotBase = Math.max(105, redDotBase - ageReduce * 0.9);
+            scope2xBase = Math.max(100, scope2xBase - ageReduce * 0.8);
+            scope4xBase = Math.max(100, scope4xBase - ageReduce * 0.7);
+            awmBase = Math.max(100, awmBase - ageReduce * 0.6);
+            olhadinhaBase = Math.max(110, olhadinhaBase - ageReduce);
+            botaoBase = Math.max(30, botaoBase - ageReduce * 1.2);
+            dpiBase = Math.max(460, dpiBase - ageReduce * 6);
+        }
+        const randomOffsetGeral = randomInt(-18, 18);
+        const randomOffsetRed = randomInt(-18, 18);
+        const randomOffset2x = randomInt(-18, 18);
+        const randomOffset4x = randomInt(-18, 18);
+        const randomOffsetAwm = randomInt(-18, 18);
+        const randomOffsetOlho = randomInt(-18, 18);
+        const randomOffsetBotao = randomInt(-10, 10);
+        const randomOffsetDpi = randomInt(-25, 25);
+        const finalGeral = Math.min(200, Math.max(100, Math.round(geralBase + randomOffsetGeral)));
+        const finalRedDot = Math.min(200, Math.max(100, Math.round(redDotBase + randomOffsetRed)));
+        const finalScope2x = Math.min(200, Math.max(100, Math.round(scope2xBase + randomOffset2x)));
+        const finalScope4x = Math.min(200, Math.max(100, Math.round(scope4xBase + randomOffset4x)));
+        const finalAwm = Math.min(200, Math.max(100, Math.round(awmBase + randomOffsetAwm)));
+        const finalOlhadinha = Math.min(200, Math.max(100, Math.round(olhadinhaBase + randomOffsetOlho)));
+        let finalBotao = Math.round(botaoBase + randomOffsetBotao);
+        finalBotao = Math.min(100, Math.max(0, finalBotao));
+        let finalDpi = Math.round(dpiBase + randomOffsetDpi);
+        finalDpi = Math.min(700, Math.max(450, finalDpi));
+        return { geral: finalGeral, pontoVermelho: finalRedDot, mira2x: finalScope2x, mira4x: finalScope4x, miraAwm: finalAwm, olhadinha: finalOlhadinha, tamanhoBotao: finalBotao, dpi: finalDpi };
+    }
+
+    function displaySensiWithRandom() {
+        const model = deviceModelInput.value.trim();
+        if (model === "") { sensiOutputDiv.innerHTML = `⚠️ Insira um modelo de dispositivo.`; return; }
+        let age = parseInt(deviceAgeInput.value, 10);
+        if (isNaN(age)) age = 0;
+        const sens = generateFullSensitivityWithRandom(selectedOS, model, age);
+        const osName = selectedOS === 'android' ? 'Android' : 'iPhone';
+        sensiOutputDiv.innerHTML = `<div style="font-weight:bold; margin-bottom:12px; border-left:3px solid #0ff; padding-left:12px;">📱 ${osName} · ${model.toUpperCase()} (${age} ano${age!==1?'s':''}) <span style="color:#aaa; font-size:0.7rem;">(geração aleatória única)</span></div>
+        <div class="sensi-grid">
+            <div class="sensi-item"><span class="sensi-label">🎯 GERAL:</span><span class="sensi-value">${sens.geral}</span></div>
+            <div class="sensi-item"><span class="sensi-label">🔴 PONTO VERMELHO:</span><span class="sensi-value">${sens.pontoVermelho}</span></div>
+            <div class="sensi-item"><span class="sensi-label">🔭 MIRA 2x:</span><span class="sensi-value">${sens.mira2x}</span></div>
+            <div class="sensi-item"><span class="sensi-label">🌀 MIRA 4x:</span><span class="sensi-value">${sens.mira4x}</span></div>
+            <div class="sensi-item"><span class="sensi-label">💀 MIRA AWM:</span><span class="sensi-value">${sens.miraAwm}</span></div>
+            <div class="sensi-item"><span class="sensi-label">👁️ OLHADINHA:</span><span class="sensi-value">${sens.olhadinha}</span></div>
+            <div class="sensi-item"><span class="sensi-label">🕹️ TAMANHO BOTÃO:</span><span class="sensi-value">${sens.tamanhoBotao}</span></div>
+            <div class="sensi-item"><span class="sensi-label">🖱️ DPI:</span><span class="sensi-value">${sens.dpi}</span></div>
+        </div><div class="note-text">✔️ Geral~Olhadinha: 100–200 | Botão: 0–100 | DPI: 450–700</div>`;
+    }
+    generateBtn.addEventListener('click', displaySensiWithRandom);
+    
+    // ---------- SENSI FAMOSOS (PREDEFINIDAS COM RANGES CORRETOS) ----------
+    const famousSelect = document.getElementById('famousSelect');
+    const famousOutput = document.getElementById('famousSensiOutput');
+
+    const famousDatabase = {
+        nobru: { name: "Nobru (LOUD)", geral: 178, redDot: 172, scope2x: 165, scope4x: 158, awm: 149, olhadinha: 185, botao: 78, dpi: 620 },
+        biel: { name: "Biel (ex-LOUD)", geral: 165, redDot: 160, scope2x: 152, scope4x: 144, awm: 135, olhadinha: 170, botao: 72, dpi: 580 },
+        cerol: { name: "Cerol (Fluxo)", geral: 190, redDot: 188, scope2x: 180, scope4x: 172, awm: 165, olhadinha: 195, botao: 85, dpi: 660 },
+        draco: { name: "Draco (Los Grandes)", geral: 155, redDot: 148, scope2x: 140, scope4x: 132, awm: 125, olhadinha: 160, botao: 60, dpi: 540 },
+        mts: { name: "MTS (Gods)", geral: 182, redDot: 175, scope2x: 168, scope4x: 160, awm: 155, olhadinha: 188, botao: 80, dpi: 600 },
+        euucria: { name: "EuuzCria (PaiN)", geral: 170, redDot: 166, scope2x: 158, scope4x: 150, awm: 140, olhadinha: 175, botao: 68, dpi: 560 },
+        death: { name: "Death (Black Dragons)", geral: 160, redDot: 155, scope2x: 147, scope4x: 139, awm: 130, olhadinha: 165, botao: 65, dpi: 550 },
+        diniz: { name: "Diniz (INTZ)", geral: 175, redDot: 170, scope2x: 162, scope4x: 154, awm: 145, olhadinha: 180, botao: 75, dpi: 590 },
+        blackn444: { name: "Blackn444 (Elite)", geral: 185, redDot: 180, scope2x: 172, scope4x: 165, awm: 158, olhadinha: 192, botao: 82, dpi: 640 }
+    };
+
+    function displayFamousSensi(famousKey) {
+        if (!famousKey || !famousDatabase[famousKey]) {
+            famousOutput.innerHTML = `👑 Selecione um jogador famoso acima para ver suas sensibilidades.`;
+            return;
+        }
+        const data = famousDatabase[famousKey];
+        famousOutput.innerHTML = `
+            <div style="font-weight:bold; margin-bottom:12px; border-left:3px solid gold; padding-left:12px;">🏆 ${data.name}</div>
+            <div class="sensi-grid">
+                <div class="sensi-item"><span class="sensi-label">🎯 GERAL:</span><span class="sensi-value">${data.geral}</span></div>
+                <div class="sensi-item"><span class="sensi-label">🔴 PONTO VERMELHO:</span><span class="sensi-value">${data.redDot}</span></div>
+                <div class="sensi-item"><span class="sensi-label">🔭 MIRA 2x:</span><span class="sensi-value">${data.scope2x}</span></div>
+                <div class="sensi-item"><span class="sensi-label">🌀 MIRA 4x:</span><span class="sensi-value">${data.scope4x}</span></div>
+                <div class="sensi-item"><span class="sensi-label">💀 MIRA AWM:</span><span class="sensi-value">${data.awm}</span></div>
+                <div class="sensi-item"><span class="sensi-label">👁️ OLHADINHA:</span><span class="sensi-value">${data.olhadinha}</span></div>
+                <div class="sensi-item"><span class="sensi-label">🕹️ TAMANHO BOTÃO:</span><span class="sensi-value">${data.botao}</span></div>
+                <div class="sensi-item"><span class="sensi-label">🖱️ DPI:</span><span class="sensi-value">${data.dpi}</span></div>
+            </div>
+            <div class="note-text" style="margin-top:8px;">🎮 Sensibilidade real utilizada pelo jogador (adaptada aos ranges do painel).</div>
+        `;
+    }
+
+    famousSelect.addEventListener('change', (e) => {
+        displayFamousSensi(e.target.value);
+    });
+
+    // inicialização
+    window.addEventListener('DOMContentLoaded', () => {
+        displaySensiWithRandom();
+        updateCircleVisibility();
+    });
+</script>
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyBbAi70USOFBT9ytiRJ9AcGC6HIkvad3n8",
+            authDomain: "gerador-de-sensi-d3431.firebaseapp.com",
+            databaseURL: "https://gerador-de-sensi-d3431-default-rtdb.firebaseio.com",
+            projectId: "gerador-de-sensi-d3431",
+            storageBucket: "gerador-de-sensi-d3431.firebasestorage.app",
+            messagingSenderId: "164254979656",
+            appId: "1:164254979656:web:32b0815c31224a9cc2aa7d",
+            measurementId: "G-9D6Q472DCH"
+        };
+
+        if (firebaseConfig.apiKey !== "SUA_API_KEY") {
+            firebase.initializeApp(firebaseConfig);
+        }
+        const db = firebase.database();
+
+        function checkKeyStatus() {
+            const auth = JSON.parse(localStorage.getItem('mestrexit_auth'));
+            if (!auth) return window.location.href = 'login.html';
+
+            db.ref('keys/' + auth.key).on('value', (snapshot) => {
+                const data = snapshot.val();
+                if (!data || data.status !== 'active' || data.hwid !== auth.hwid) {
+                    alert('Sessão encerrada.');
+                    localStorage.removeItem('mestrexit_auth');
+                    window.location.href = 'login.html';
+                }
+            });
+        }
+        checkKeyStatus();
+    </script>
+</body>
+</html>
