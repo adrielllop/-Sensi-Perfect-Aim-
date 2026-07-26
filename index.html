@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MestreXit.ia - Orange & Black Elite System</title>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+    <script>
+        (function() {
+            const auth = localStorage.getItem('mestrexit_auth');
+            if (!auth) { window.location.href = 'login.html'; return; }
+            const data = JSON.parse(auth);
+            if (Date.now() > data.expires) {
+                localStorage.removeItem('mestrexit_auth');
+                window.location.href = 'login.html';
+                return;
+            }
+        })();
+    </script>
+    <style>
+        :root {
+            --bg: #000000;
+            --card: #0a0a0a;
+            --card2: #121212;
+            --border: #1a1a1a;
+            --text: #ffffff;
+            --text2: #888888;
+            --accent: #ff6600;
+            --accent-glow: rgba(255, 102, 0, 0.4);
+            --gold: #ffcc00;
+            --silver: #c0c0c0;
+            --bronze: #cd7f32;
+            --green: #00ff88;
+            --gradient-orange: linear-gradient(135deg, #ff6600, #ff3300);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background: var(--bg);
+            font-family: 'Rajdhani', 'Segoe UI', sans-serif;
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(255, 102, 0, 0.08) 0%, transparent 40%),
+                url("https://www.transparenttextures.com/patterns/carbon-fibre.png");
+        }
+
+        .container {
+            width: 100%;
+            max-width: 580px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            position: relative;
+        }
+
+        .status-bar-elite {
+            background: rgba(10, 10, 10, 0.9);
+            padding: 12px 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            font-size: 0.75rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid var(--border);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+        }
+        .status-item b { color: var(--accent); }
+
+        .logo-text { text-align: center; margin-bottom: 20px; }
+        .logo-text h1 { font-size: 3rem; font-weight: 900; letter-spacing: -3px; color: #fff; }
+        .logo-text h1 span { color: var(--accent); text-shadow: 0 0 15px var(--accent-glow); }
+        .logo-text p { font-size: 0.75rem; letter-spacing: 5px; color: var(--accent); text-transform: uppercase; font-weight: 700; }
+
+        .nav-elite {
+            display: flex;
+            background: var(--card2);
+            border-radius: 16px;
+            padding: 6px;
+            gap: 6px;
+            border: 1px solid var(--border);
+        }
+        .nav-item {
+            flex: 1;
+            padding: 14px;
+            text-align: center;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 800;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            color: var(--text2);
+            transition: 0.3s;
+        }
+        .nav-item.active { background: var(--card); color: var(--accent); border: 1px solid var(--accent); box-shadow: 0 0 15px var(--accent-glow); }
+
+        .card-elite {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 28px;
+            padding: 30px;
+            box-shadow: 0 30px 60px rgba(0,0,0,0.8);
+            position: relative;
+        }
+
+        .panel { display: none; }
+        .panel.active { display: block; animation: fadeIn 0.4s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .section-title {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            color: var(--accent);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 800;
+        }
+        .section-title::after { content: ""; flex: 1; height: 1px; background: linear-gradient(to right, var(--accent), transparent); }
+
+        .input-group { margin-bottom: 20px; }
+        .input-group label { display: block; font-size: 0.7rem; font-weight: 800; color: var(--text2); text-transform: uppercase; margin-bottom: 8px; letter-spacing: 1px; }
+        .input-elite {
+            width: 100%;
+            background: #000;
+            border: 1px solid var(--border);
+            padding: 16px;
+            border-radius: 14px;
+            color: #fff;
+            font-family: inherit;
+            outline: none;
+            transition: 0.3s;
+        }
+        .input-elite:focus { border-color: var(--accent); box-shadow: 0 0 15px var(--accent-glow); }
+
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+
+        .btn-elite {
+            width: 100%;
+            padding: 20px;
+            border-radius: 16px;
+            border: none;
+            font-family: inherit;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            cursor: pointer;
+            background: var(--gradient-orange);
+            color: #fff;
+            transition: 0.3s;
+            box-shadow: 0 10px 25px rgba(255, 102, 0, 0.3);
+        }
+        .btn-elite:hover { transform: translateY(-3px); box-shadow: 0 15px 35px rgba(255, 102, 0, 0.4); }
+
+        .result-box {
+            margin-top: 25px;
+            background: #000;
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 25px;
+            border-left: 5px solid var(--accent);
+            animation: slideUp 0.5s ease;
+        }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        .val-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #111; }
+        .val-row:last-child { border-bottom: none; }
+        .val-label { color: var(--text2); font-size: 0.85rem; font-weight: 700; text-transform: uppercase; }
+        .val-value { font-weight: 800; color: var(--accent); }
+
+        .vip-card {
+            background: #050505;
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            padding: 18px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .vip-card:hover { border-color: var(--accent); }
+        .vip-card.locked { opacity: 0.5; cursor: not-allowed; border-style: dashed; }
+
+        .toast {
+            position: fixed;
+            bottom: 40px; left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: #111;
+            color: #fff;
+            padding: 15px 30px;
+            border-radius: 50px;
+            border: 1px solid var(--accent);
+            z-index: 10000;
+            transition: 0.4s;
+            font-weight: 800;
+        }
+        .toast.show { transform: translateX(-50%) translateY(0); }
+
+        .lock-overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border-radius: 28px;
+            z-index: 10;
+            text-align: center;
+            padding: 30px;
+        }
+        .lock-overlay h3 { color: var(--gold); margin-bottom: 10px; font-size: 1.5rem; }
+        .lock-overlay p { font-size: 0.9rem; color: var(--text2); margin-bottom: 20px; }
+
+        .badge-rank {
+            padding: 3px 10px;
+            border-radius: 6px;
+            font-size: 0.65rem;
+            font-weight: 900;
+            margin-left: 8px;
+            vertical-align: middle;
+        }
+        .badge-bronze { background: var(--bronze); color: #fff; }
+        .badge-silver { background: var(--silver); color: #000; }
+        .badge-gold { background: var(--gold); color: #000; }
+
+        .ideal-sensi-badge {
+            background: var(--gradient-orange);
+            color: #fff;
+            padding: 4px 12px;
+            border-radius: 50px;
+            font-size: 0.7rem;
+            font-weight: 900;
+            margin-bottom: 15px;
+            display: inline-block;
+            box-shadow: 0 0 15px var(--accent-glow);
+        }
+
+        .footer {
+            text-align: center;
+            font-size: 0.7rem;
+            color: var(--text2);
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            font-weight: 700;
+            margin-top: 15px;
+            opacity: 0.6;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="status-bar-elite">
+            <div class="status-item">KEY: <b id="display-key">---</b></div>
+            <div class="status-item rank-display">PLAN: <b id="display-type">---</b></div>
+            <div class="status-item">STATUS: <b style="color: var(--green);">ELITE</b></div>
+        </div>
+
+        <div class="logo-text">
+            <h1>MESTREXIT<span>.</span>IA</h1>
+            <p>Orange & Black Elite Edition</p>
+        </div>
+
+        <div class="nav-elite">
+            <div class="nav-item active" onclick="switchPanel('sensis', this)">Sensibilidade</div>
+            <div id="nav-aim" class="nav-item" onclick="switchPanel('aim', this)">Aim System</div>
+            <div id="nav-vip" class="nav-item" onclick="switchPanel('vip', this)">VIP Tools</div>
+        </div>
+
+        <div class="card-elite" style="position: relative; min-height: 400px;">
+            <div id="lock-screen" class="lock-overlay" style="display: none;">
+                <h3>🔒 ACESSO RESTRITO</h3>
+                <p id="lock-message">Este módulo requer um plano superior para ser desbloqueado.</p>
+                <button class="btn-elite" style="padding: 15px; font-size: 0.9rem;" onclick="window.open('https://t.me/seu_suporte')">ADQUIRIR PLANO ELITE</button>
+            </div>
+
+            <!-- Sensis -->
+            <div id="panel-sensis" class="panel active">
+                <div class="section-title">Gerador de Sensibilidade <span id="sensi-rank-badge"></span></div>
+                <div class="grid-2">
+                    <div class="input-group">
+                        <label>Plataforma</label>
+                        <select id="platform" class="input-elite">
+                            <option value="android">Android</option>
+                            <option value="ios">iPhone</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label>Modelo do Aparelho</label>
+                        <input type="text" id="device-model" class="input-elite" placeholder="Ex: iPhone 14 Pro Max">
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label>Estilo de Combate</label>
+                    <select id="play-style" class="input-elite">
+                        <option value="rush">RUSHADOR (AGRESSIVO)</option>
+                        <option value="suporte">SUPORTE (LONGA DISTÂNCIA)</option>
+                        <option value="equilibrado">EQUILIBRADO (MISTO)</option>
+                    </select>
+                </div>
+                <button class="btn-elite" onclick="generateSensi()">GERAR SENSIBILIDADE IDEAL</button>
+                <div id="result-sensi" style="display: none;"></div>
+            </div>
+
+            <!-- Aim -->
+            <div id="panel-aim" class="panel">
+                <div class="section-title">Injeção de Algoritmos <span id="aim-rank-badge"></span></div>
+                <div id="aim-options-container" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px;">
+                    <!-- Opções via JS -->
+                </div>
+                <button class="btn-elite" onclick="injectAim()">INJETAR SCRIPTS NO SISTEMA</button>
+                <div id="result-aim" style="display: none;"></div>
+            </div>
+
+            <!-- VIP -->
+            <div id="panel-vip" class="panel">
+                <div class="section-title">Ferramentas de Elite <span id="vip-rank-badge"></span></div>
+                <div id="vip-tools-container">
+                    <!-- Ferramentas via JS -->
+                </div>
+                <div id="result-vip" style="display: none; margin-top: 20px;"></div>
+            </div>
+        </div>
+
+        <div class="footer">MESTREXIT.IA — PRECISÃO QUE DERRUBA LENDAS</div>
+    </div>
+
+    <div class="toast" id="toast">Operação Concluída</div>
+
+    <script>
+        let userRank = 'bronze';
+        
+        function checkAuth() {
+            const auth = JSON.parse(localStorage.getItem('mestrexit_auth')) || {key: 'TRIAL-777', type: 'bronze'};
+            userRank = auth.type.toLowerCase();
+            document.getElementById('display-key').innerText = auth.key;
+            document.getElementById('display-type').innerText = userRank.toUpperCase();
+            
+            const rankColor = userRank === 'gold' ? 'var(--gold)' : (userRank === 'silver' ? 'var(--silver)' : 'var(--bronze)');
+            document.querySelector('.rank-display b').style.color = rankColor;
+
+            const badgeHtml = `<span class="badge-rank badge-${userRank}">${userRank.toUpperCase()}</span>`;
+            document.getElementById('sensi-rank-badge').innerHTML = badgeHtml;
+            document.getElementById('aim-rank-badge').innerHTML = badgeHtml;
+            document.getElementById('vip-rank-badge').innerHTML = badgeHtml;
+
+            setupAimOptions();
+            setupVIPTools();
+        }
+
+        function setupAimOptions() {
+            const container = document.getElementById('aim-options-container');
+            const options = [
+                { id: 'headshot', name: 'HEADSHOT 99%', rank: 'silver' },
+                { id: 'tracking', name: 'AUTO TRACK', rank: 'gold' },
+                { id: 'recoil', name: 'NO RECOIL', rank: 'silver' },
+                { id: 'magic', name: 'MAGIC BULLET', rank: 'gold' }
+            ];
+
+            container.innerHTML = options.map(opt => {
+                const isLocked = !checkPermission(opt.rank);
+                return `
+                    <div class="vip-card ${isLocked ? 'locked' : ''}" style="margin-bottom:0; padding:15px;" onclick="${isLocked ? "showToast('🔒 Requer plano " + opt.rank.toUpperCase() + "')" : "toggleOption(this)" }">
+                        <div style="font-size:0.85rem; font-weight:800; color:${isLocked ? '#444' : '#fff'}">${opt.name}</div>
+                        ${isLocked ? '<span style="font-size:0.7rem;">🔒</span>' : ''}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function setupVIPTools() {
+            const container = document.getElementById('vip-tools-container');
+            const tools = [
+                { id: 'regedit', name: 'Regedit Orange V4', desc: 'Otimização de registro profissional.', rank: 'gold', icon: '💎' },
+                { id: 'dpi', name: 'Scanner de DPI', desc: 'Cálculo de limite de hardware.', rank: 'silver', icon: '📈' },
+                { id: 'boost', name: 'Power Boost', desc: 'Máxima performance de CPU.', rank: 'bronze', icon: '⚡' }
+            ];
+
+            container.innerHTML = tools.map(tool => {
+                const isLocked = !checkPermission(tool.rank);
+                return `
+                    <div class="vip-card ${isLocked ? 'locked' : ''}" onclick="${isLocked ? "showToast('🔒 Requer plano " + tool.rank.toUpperCase() + "')" : "runTool('" + tool.id + "')" }">
+                        <div class="vip-icon">${isLocked ? '🔒' : tool.icon}</div>
+                        <div class="vip-info">
+                            <h4>${tool.name}</h4>
+                            <p>${isLocked ? 'Disponível apenas para planos superiores.' : tool.desc}</p>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function checkPermission(requiredRank) {
+            const ranks = ['bronze', 'silver', 'gold'];
+            return ranks.indexOf(userRank) >= ranks.indexOf(requiredRank);
+        }
+
+        function switchPanel(panelId, el) {
+            const lockScreen = document.getElementById('lock-screen');
+            if ((panelId === 'aim' || panelId === 'vip') && userRank === 'bronze') {
+                lockScreen.style.display = 'flex';
+                document.getElementById('lock-message').innerText = `O módulo ${panelId.toUpperCase()} requer plano PRATA ou superior.`;
+            } else {
+                lockScreen.style.display = 'none';
+            }
+
+            document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            document.getElementById('panel-' + panelId).classList.add('active');
+            el.classList.add('active');
+        }
+
+        function generateSensi() {
+            const model = document.getElementById('device-model').value;
+            if (!model) { showToast('❌ Informe o Modelo!'); return; }
+
+            const result = document.getElementById('result-sensi');
+            const style = document.getElementById('play-style').value;
+            const seed = model.length + style.length;
+
+            // Algoritmo de Sensi Ideal
+            let base = 90;
+            if (userRank === 'gold') base = 96;
+            else if (userRank === 'silver') base = 93;
+
+            const config = {
+                geral: clamp(base + (seed % 5), 85, 100),
+                pontoVermelho: clamp(base - 5 + (seed % 10), 80, 100),
+                mira2x: clamp(base - 2 + (seed % 7), 85, 100),
+                mira4x: clamp(base - 4 + (seed % 8), 80, 100),
+                miraAWM: clamp(20 + (seed % 30), 10, 60),
+                olhadinha: clamp(50 + (seed % 40), 30, 95),
+                botao: clamp(40 + (seed % 15), 35, 60)
+            };
+
+            result.innerHTML = `
+                <div class="result-box">
+                    <div class="ideal-sensi-badge">✨ SENSI IDEAL DETECTADA</div>
+                    <h4 style="color:#fff; margin-bottom:15px; font-size:1rem;">CONFIGURAÇÃO PARA: ${model.toUpperCase()}</h4>
+                    
+                    <div class="val-row"><span class="val-label">GERAL</span><span class="val-value">${config.geral}</span></div>
+                    <div class="val-row"><span class="val-label">PONTO VERMELHO</span><span class="val-value">${config.pontoVermelho}</span></div>
+                    <div class="val-row"><span class="val-label">MIRA 2X</span><span class="val-value">${config.mira2x}</span></div>
+                    <div class="val-row"><span class="val-label">MIRA 4X</span><span class="val-value">${config.mira4x}</span></div>
+                    <div class="val-row"><span class="val-label">MIRA AWM</span><span class="val-value">${config.miraAWM}</span></div>
+                    <div class="val-row"><span class="val-label">OLHADINHA</span><span class="val-value">${config.olhadinha}</span></div>
+                    <div class="val-row"><span class="val-label">BOTÃO ATIRAR</span><span class="val-value" style="color:#fff;">${config.botao}%</span></div>
+                    
+                    <button class="btn-elite" style="margin-top:20px; padding:12px; font-size:0.8rem;" onclick="copySensi(this)">COPIAR CONFIGURAÇÃO</button>
+                </div>
+            `;
+            result.style.display = 'block';
+            showToast('✅ Sensi Ideal Gerada!');
+        }
+
+        function copySensi(btn) {
+            const rows = document.querySelectorAll('#result-sensi .val-row');
+            let text = "🔥 MESTREXIT.IA - SENSI IDEAL 🔥\n\n";
+            rows.forEach(row => {
+                text += `${row.querySelector('.val-label').innerText}: ${row.querySelector('.val-value').innerText}\n`;
+            });
+            navigator.clipboard.writeText(text);
+            btn.innerText = "COPIADO!";
+            setTimeout(() => btn.innerText = "COPIAR CONFIGURAÇÃO", 2000);
+        }
+
+        function injectAim() {
+            const result = document.getElementById('result-aim');
+            let precisao = userRank === 'gold' ? "99.9%" : (userRank === 'silver' ? "94.2%" : "88%");
+
+            result.innerHTML = `
+                <div class="result-box" style="border-left-color: var(--green);">
+                    <h4 style="color:var(--green); margin-bottom:10px;">SCRIPTS INJETADOS</h4>
+                    <div class="val-row"><span class="val-label">PRECISÃO DE MIRA</span><span class="val-value" style="color:var(--green);">${precisao}</span></div>
+                    <div class="val-row"><span class="val-label">ESTABILIDADE</span><span class="val-value" style="color:var(--green);">MÁXIMA</span></div>
+                </div>
+            `;
+            result.style.display = 'block';
+            showToast('🚀 Algoritmos Injetados!');
+        }
+
+        function runTool(id) {
+            const result = document.getElementById('result-vip');
+            result.style.display = 'block';
+            if (id === 'regedit') {
+                result.innerHTML = `<div class="result-box" style="border-color:var(--gold);">
+                    <h4 style="color:var(--gold);">REGEDIT ORANGE V4</h4>
+                    <pre style="font-size:0.75rem; color:var(--green); margin-top:10px; font-family:monospace;">[Elite_System]\nAimLock=1\nSmooth_Touch=MAX\nNo_Recoil_Script=ON\nFPS_Boost=120</pre>
+                </div>`;
+            } else if (id === 'dpi') {
+                result.innerHTML = `<div class="result-box">
+                    <h4>DPI SCANNER</h4>
+                    <p style="font-size:0.9rem;">LIMITE SEGURO: <b style="color:var(--accent);">780 DPI</b></p>
+                </div>`;
+            } else {
+                showToast('⚡ Performance Otimizada!');
+            }
+        }
+
+        function showToast(msg) {
+            const t = document.getElementById('toast');
+            t.innerText = msg;
+            t.classList.add('show');
+            setTimeout(() => t.classList.remove('show'), 3000);
+        }
+
+        function toggleOption(el) {
+            el.style.borderColor = el.style.borderColor === 'rgb(255, 102, 0)' ? 'var(--border)' : 'var(--accent)';
+        }
+
+        function clamp(val, min, max) {
+            return Math.round(Math.max(min, Math.min(max, val)));
+        }
+
+        checkAuth();
+    </script>
+</body>
+</html>
